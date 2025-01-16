@@ -299,7 +299,7 @@ local config = {
 	-- chat_template = require("gp.defaults").short_chat_template,
 	-- chat topic generation prompt
 	chat_topic_gen_prompt = "Summarize the topic of our conversation above"
-		.. " in two or three words. Respond only with those words.",
+					.. " in two or three words. Respond only with those words.",
 	-- chat topic model (string with model name or table with model name and parameters)
 	-- explicitly confirm deletion of a chat file
 	chat_confirm_delete = true,
@@ -358,16 +358,30 @@ local config = {
 
 	-- templates
 	template_selection = "I have the following from {{filename}}:"
-		.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}",
+					.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}",
 	template_rewrite = "I have the following from {{filename}}:"
-		.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}"
-		.. "\n\nRespond exclusively with the snippet that should replace the selection above.",
+					.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}"
+					.. "\n\nRespond exclusively with the snippet that should replace the selection above.",
+	template_rewrite_with_file = "I have the following file {{filename}}:"
+					.. "\n\n```\n{{file_content}}\n```"
+					.. "\n\n I want to update the following code block"
+					.. "\n\n```\n{{selection}}\n```"
+					.. "\n\nInstructions: "
+					.. "\n- {{command}}"
+					.. "\n- Respond EXCLUSIVELY with the snippet that should replace the selection above."
+					.. "\n- DO NOT GIVE ANY EXPLANATION.",
 	template_append = "I have the following from {{filename}}:"
-		.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}"
-		.. "\n\nRespond exclusively with the snippet that should be appended after the selection above.",
+					.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}"
+					.. "\n\nRespond exclusively with the snippet that should be appended after the selection above.",
+	template_append_with_file = "I have the following file {{filename}}:"
+					.. "\n\n```\n{{file_content}}\n```"
+					.. "\n\n I want to add code in the file after line {{current_line}} given these instructions:"
+					.. "\n- {{command}}"
+					.. "\n- Respond EXCLUSIVELY with the snippet that should be appended after line {{current_line}}."
+					.. "\n- DO NOT GIVE ANY EXPLANATION.",
 	template_prepend = "I have the following from {{filename}}:"
-		.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}"
-		.. "\n\nRespond exclusively with the snippet that should be prepended before the selection above.",
+					.. "\n\n```{{filetype}}\n{{selection}}\n```\n\n{{command}}"
+					.. "\n\nRespond exclusively with the snippet that should be prepended before the selection above.",
 	template_command = "{{command}}",
 
 	-- https://platform.openai.com/docs/guides/speech-to-text/quickstart
@@ -548,10 +562,14 @@ local config = {
 
 		-- GpImplement rewrites the provided selection/range based on comments in it
 		Implement = function(gp, params)
-			local template = "Having following from {{filename}}:\n\n"
-				.. "```{{filetype}}\n{{selection}}\n```\n\n"
-				.. "Please rewrite this according to the contained instructions."
-				.. "\n\nRespond exclusively with the snippet that should replace the selection above."
+			local template = "I have the following file {{filename}}:"
+							.. "\n\n```\n{{file_content}}\n```"
+							.. "\n\n I want to update the following code block"
+							.. "\n\n```\n{{selection}}\n```"
+							.. "\n\nInstructions: "
+							.. "\n- Please rewrite this according to the contained instructions."
+							.. "\n- Respond EXCLUSIVELY with the snippet that should replace the selection above."
+							.. "\n- DO NOT GIVE ANY EXPLANATION."
 
 			local agent = gp.get_command_agent()
 			gp.logger.info("Implementing selection with agent: " .. agent.name)
@@ -562,7 +580,7 @@ local config = {
 				agent,
 				template,
 				nil, -- command will run directly without any prompting for user input
-				nil -- no predefined instructions (e.g. speech-to-text from Whisper)
+				nil  -- no predefined instructions (e.g. speech-to-text from Whisper)
 			)
 		end,
 

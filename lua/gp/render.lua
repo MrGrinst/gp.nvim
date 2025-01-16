@@ -41,7 +41,7 @@ end
 ---@param selection string | nil # selection
 ---@param filetype string | nil # filetype
 ---@param filename string | nil # filename
-M.prompt_template = function(template, command, selection, filetype, filename)
+M.prompt_template = function(template, command, selection, filetype, filename, current_line_number)
 	local git_root = helpers.find_git_root(filename)
 	if git_root ~= "" then
 		local git_root_plus_one = vim.fn.fnamemodify(git_root, ":h")
@@ -56,6 +56,8 @@ M.prompt_template = function(template, command, selection, filetype, filename)
 		["{{selection}}"] = selection,
 		["{{filetype}}"] = filetype,
 		["{{filename}}"] = filename,
+		["{{current_line_number}}"] = tostring(current_line_number),
+		["{{file_content}}"] = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 	}
 	return M.template(template, key_value_pairs)
 end
@@ -71,7 +73,8 @@ M.append_selection = function(params, origin_buf, target_buf, template)
 	if selection ~= "" then
 		local filetype = helpers.get_filetype(origin_buf)
 		local fname = vim.api.nvim_buf_get_name(origin_buf)
-		local rendered = M.prompt_template(template, "", selection, filetype, fname)
+		local current_line_number = params.line1
+		local rendered = M.prompt_template(template, "", selection, filetype, fname, current_line_number)
 		if rendered then
 			selection = rendered
 		end
